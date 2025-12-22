@@ -37,10 +37,15 @@ public class MenuActivity extends AppCompatActivity {
         recyclerView.setAdapter(new MenuAdapter(sampleMenu));
 
         Button btnBookManage = findViewById(R.id.btnBookManage);
+        Button btnStaffLogin = findViewById(R.id.btnStaffLogin);
+
 
         btnBookManage.setOnClickListener(v -> {
-            Intent intent = new Intent(MenuActivity.this, GuestLoginActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MenuActivity.this, ManageReservationActivity.class));
+        });
+
+        btnStaffLogin.setOnClickListener(v -> {
+            startActivity(new Intent(MenuActivity.this, StaffDashboardActivity.class));
         });
     }
 }

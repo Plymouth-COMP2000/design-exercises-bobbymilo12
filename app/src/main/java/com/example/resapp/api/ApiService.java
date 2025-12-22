@@ -1,9 +1,7 @@
 package com.example.resapp.api;
 
-import com.example.resapp.models.User;
+import com.example.resapp.User;
 import com.google.gson.JsonObject;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

@@ -3,52 +3,72 @@ package com.example.resapp;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
 public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.ViewHolder> {
 
-    private List<Reservation> reservationList;
+    private List<Reservation> reservations;
+    private boolean isStaff;
+    private DatabaseHelper dbHelper;
 
-    public ReservationAdapter(List<Reservation> reservationList) {
-        this.reservationList = reservationList;
+    public ReservationAdapter(List<Reservation> reservations) {
+        this.reservations = reservations;
+        this.isStaff = false;
     }
 
-    @NonNull
+    public ReservationAdapter(List<Reservation> reservations, boolean isStaff, DatabaseHelper dbHelper) {
+        this.reservations = reservations;
+        this.isStaff = isStaff;
+        this.dbHelper = dbHelper;
+    }
+
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_reservation, parent, false);
+                .inflate(R.layout.item_staff_reservation, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Reservation res = reservationList.get(position);
-        holder.tvName.setText(res.getName());
-        holder.tvDateTime.setText(res.getDate() + " | " + res.getTime());
-        holder.tvGuests.setText("Guests: " + res.getGuests());
-        holder.tvRequests.setText("Requests: " + res.getRequests());
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        Reservation r = reservations.get(position);
+
+        holder.tvDetails.setText(
+                r.getName() + "\n" +
+                        r.getDate() + " " + r.getTime() +
+                        "\nGuests: " + r.getGuests()
+        );
+
+        if (isStaff) {
+            holder.btnCancel.setVisibility(View.VISIBLE);
+            holder.btnCancel.setOnClickListener(v -> {
+                dbHelper.deleteReservation(r.getId());
+                reservations.remove(position);
+                notifyItemRemoved(position);
+            });
+        } else {
+            holder.btnCancel.setVisibility(View.GONE);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return reservationList.size();
+        return reservations.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDateTime, tvGuests, tvRequests;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvDetails;
+        Button btnCancel;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvResName);
-            tvDateTime = itemView.findViewById(R.id.tvResDateTime);
-            tvGuests = itemView.findViewById(R.id.tvResGuests);
-            tvRequests = itemView.findViewById(R.id.tvResRequests);
+            tvDetails = itemView.findViewById(R.id.tvReservationDetails);
+            btnCancel = itemView.findViewById(R.id.btnCancelReservation);
         }
     }
 }
