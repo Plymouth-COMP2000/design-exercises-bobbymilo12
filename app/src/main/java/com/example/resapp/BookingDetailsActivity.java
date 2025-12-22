@@ -12,7 +12,7 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-//test
+//test 2
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BookingDetailsActivity extends AppCompatActivity {
