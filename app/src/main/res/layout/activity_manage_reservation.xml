@@ -8,7 +8,6 @@
     android:padding="20dp"
     tools:context=".ManageReservationActivity">
 
-    <!-- Title -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
@@ -20,7 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Placeholder when no reservations -->
     <TextView
         android:id="@+id/tvPlaceholder"
         android:layout_width="0dp"
@@ -33,7 +31,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- RecyclerView for reservations -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvReservations"
         android:layout_width="0dp"

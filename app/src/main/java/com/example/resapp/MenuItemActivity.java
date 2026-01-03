@@ -1,5 +1,8 @@
 package com.example.resapp;
 
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -9,22 +12,48 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MenuItemActivity extends AppCompatActivity {
 
+    private ImageView imgLarge;
+    private TextView tvName, tvIngredients;
+    private Button btnBack;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_item);
 
-        ImageView img = findViewById(R.id.imgLarge);
-        TextView name = findViewById(R.id.tvItemName);
-        TextView ingredients = findViewById(R.id.tvIngredients);
-        TextView allergens = findViewById(R.id.tvAllergens);
-        Button backButton = findViewById(R.id.btnBackToMenu);
+        imgLarge = findViewById(R.id.imgLarge);
+        tvName = findViewById(R.id.tvItemName);
+        tvIngredients = findViewById(R.id.tvIngredients);
+        btnBack = findViewById(R.id.btnBackToMenu);
 
-        img.setImageResource(getIntent().getIntExtra("image", 0));
-        name.setText(getIntent().getStringExtra("name"));
-        ingredients.setText("Ingredients: " + getIntent().getStringExtra("ingredients"));
-        allergens.setText("Allergens: " + getIntent().getStringExtra("allergens"));
+        int menuItemId = getIntent().getIntExtra("menuItemId", -1);
+        if (menuItemId != -1) {
+            loadMenuItem(menuItemId);
+        }
 
-        backButton.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> finish());
+    }
+
+    private void loadMenuItem(int id) {
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        Cursor cursor = dbHelper.getMenuItemById(id);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_NAME));
+            double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_PRICE));
+            String allergens = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_ALLERGENS));
+            String imageUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_IMAGE));
+
+            tvName.setText(name + " - £" + price);
+            tvIngredients.setText("Allergens: " + allergens);
+
+            if (imageUri != null && !imageUri.isEmpty()) {
+                imgLarge.setImageURI(Uri.parse(imageUri));
+            } else {
+                imgLarge.setImageResource(R.drawable.burger); // fallback
+            }
+
+            cursor.close();
+        }
     }
 }

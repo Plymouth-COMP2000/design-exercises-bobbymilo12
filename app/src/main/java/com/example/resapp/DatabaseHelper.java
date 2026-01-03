@@ -1,135 +1,188 @@
 package com.example.resapp;
 
-import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "resapp.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final String DB_NAME = "resapp.db";
+    private static final int DB_VERSION = 3;
 
-    private static final String TABLE_RESERVATIONS = "reservations";
-    private static final String COLUMN_ID = "id";
-    private static final String COLUMN_NAME = "name";
-    private static final String COLUMN_DATE = "date";
-    private static final String COLUMN_TIME = "time";
-    private static final String COLUMN_GUESTS = "guests";
-    private static final String COLUMN_REQUESTS = "requests";
+    //reservations
+    public static final String TABLE_RESERVATIONS = "reservations";
+    public static final String COL_ID = "id";
+    public static final String COL_EMAIL = "email";
+    public static final String COL_NAME = "name";
+    public static final String COL_DATE = "date";
+    public static final String COL_TIME = "time";
+    public static final String COL_GUESTS = "guests";
+    public static final String COL_REQUESTS = "requests";
 
-    private final Context context;
+    // users
+    public static final String TABLE_USERS = "users";
+    public static final String USER_COL_ID = "id";
+    public static final String USER_COL_EMAIL = "email";
+    public static final String USER_COL_PASSWORD = "password";
+    public static final String USER_COL_FULLNAME = "fullname";
+
+    // menu
+    public static final String TABLE_MENU = "menu";
+    public static final String MENU_ID = "id";
+    public static final String MENU_NAME = "name";
+    public static final String MENU_PRICE = "price";
+    public static final String MENU_ALLERGENS = "allergens";
+    public static final String MENU_IMAGE = "image_uri";
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context = context;
-        createNotificationChannel();
+        super(context, DB_NAME, null, DB_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_RESERVATIONS_TABLE =
-                "CREATE TABLE " + TABLE_RESERVATIONS + "("
-                        + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                        + COLUMN_NAME + " TEXT,"
-                        + COLUMN_DATE + " TEXT,"
-                        + COLUMN_TIME + " TEXT,"
-                        + COLUMN_GUESTS + " INTEGER,"
-                        + COLUMN_REQUESTS + " TEXT"
-                        + ")";
-        db.execSQL(CREATE_RESERVATIONS_TABLE);
+
+        // reservation table
+        db.execSQL("CREATE TABLE " + TABLE_RESERVATIONS + " ("
+                + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_EMAIL + " TEXT, "
+                + COL_NAME + " TEXT, "
+                + COL_DATE + " TEXT, "
+                + COL_TIME + " TEXT, "
+                + COL_GUESTS + " INTEGER, "
+                + COL_REQUESTS + " TEXT)");
+
+        // user table
+        db.execSQL("CREATE TABLE " + TABLE_USERS + " ("
+                + USER_COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + USER_COL_EMAIL + " TEXT UNIQUE, "
+                + USER_COL_PASSWORD + " TEXT, "
+                + USER_COL_FULLNAME + " TEXT)");
+
+        // menu table
+        db.execSQL("CREATE TABLE " + TABLE_MENU + " ("
+                + MENU_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + MENU_NAME + " TEXT, "
+                + MENU_PRICE + " REAL, "
+                + MENU_ALLERGENS + " TEXT, "
+                + MENU_IMAGE + " TEXT)");
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(SQLiteDatabase db, int oldV, int newV) {
+        Log.i("DatabaseHelper", "Upgrading DB " + oldV + " → " + newV);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_RESERVATIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MENU);
         onCreate(db);
     }
 
-
-    // create reservation
-
-    public long addReservation(String name, String date, String time, int guests, String requests) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, name);
-        values.put(COLUMN_DATE, date);
-        values.put(COLUMN_TIME, time);
-        values.put(COLUMN_GUESTS, guests);
-        values.put(COLUMN_REQUESTS, requests);
-
-        long result = db.insert(TABLE_RESERVATIONS, null, values);
-        db.close();
-
-        if (result != -1) {
-            sendNotification();
-        }
-
-        return result;
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldV, int newV) {
+        onUpgrade(db, oldV, newV);
     }
 
+    public Cursor getUserReservations(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(
+                TABLE_RESERVATIONS,
+                new String[]{COL_ID, COL_NAME, COL_DATE, COL_TIME, COL_GUESTS, COL_REQUESTS},
+                COL_EMAIL + "=?",
+                new String[]{email},
+                null, null,
+                COL_DATE + " ASC"
+        );
+    }
 
-    // view reservations
+    public long addReservation(String email, String name, String date, String time, int guests, String requests) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_EMAIL, email);
+        cv.put(COL_NAME, name);
+        cv.put(COL_DATE, date);
+        cv.put(COL_TIME, time);
+        cv.put(COL_GUESTS, guests);
+        cv.put(COL_REQUESTS, requests);
+        return db.insert(TABLE_RESERVATIONS, null, cv);
+    }
+
+    public int deleteReservation(int id) {
+        return getWritableDatabase().delete(
+                TABLE_RESERVATIONS, COL_ID + "=?", new String[]{String.valueOf(id)});
+    }
 
     public Cursor getAllReservations() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM " + TABLE_RESERVATIONS, null);
+        return getReadableDatabase().query(TABLE_RESERVATIONS,
+                null, null, null, null, null, COL_DATE + " ASC");
     }
 
-
-    // delete reservations
-    public void deleteReservation(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_RESERVATIONS, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
-        db.close();
+    public long addUser(String email, String password, String fullName) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(USER_COL_EMAIL, email);
+        cv.put(USER_COL_PASSWORD, password);
+        cv.put(USER_COL_FULLNAME, fullName);
+        return db.insertWithOnConflict(TABLE_USERS, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
-    // noti function
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "reservations",
-                    "Reservations",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            channel.setDescription("New reservation notifications");
+    public long addMenuItem(String name, double price, String allergens, String imageUri) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(MENU_NAME, name);
+        cv.put(MENU_PRICE, price);
+        cv.put(MENU_ALLERGENS, allergens);
+        cv.put(MENU_IMAGE, imageUri);
+        return db.insert(TABLE_MENU, null, cv);
+    }
 
-            NotificationManager manager =
-                    context.getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+    public Cursor getAllMenuItems() {
+        return getReadableDatabase().query(
+                TABLE_MENU, null, null, null, null, null, MENU_NAME + " ASC");
+    }
+
+    public Cursor getMenuItemById(int id) {
+        return getReadableDatabase().query(
+                TABLE_MENU, null, MENU_ID + "=?",
+                new String[]{String.valueOf(id)}, null, null, null);
+    }
+
+    public int updateMenuItem(int id, String name, double price, String allergens, String imageUri) {
+        ContentValues cv = new ContentValues();
+        cv.put(MENU_NAME, name);
+        cv.put(MENU_PRICE, price);
+        cv.put(MENU_ALLERGENS, allergens);
+        cv.put(MENU_IMAGE, imageUri);
+
+        return getWritableDatabase().update(
+                TABLE_MENU, cv, MENU_ID + "=?", new String[]{String.valueOf(id)});
+    }
+
+    public int deleteMenuItem(int id) {
+        return getWritableDatabase().delete(
+                TABLE_MENU, MENU_ID + "=?", new String[]{String.valueOf(id)});
+    }
+
+    public boolean isMenuEmpty() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_MENU, null);
+        boolean empty = true;
+        if (c.moveToFirst()) {
+            empty = c.getInt(0) == 0;
         }
+        c.close();
+        return empty;
     }
 
-    private void sendNotification() {
-        // permission check
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED) {
-                return; // Permission denied → exit safely
-            }
-        }
+    public void seedMenuIfEmpty() {
+        if (!isMenuEmpty()) return;
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(context, "reservations")
-                        .setSmallIcon(android.R.drawable.ic_dialog_info)
-                        .setContentTitle("New Reservation")
-                        .setContentText("A new reservation has been made")
-                        .setPriority(NotificationCompat.PRIORITY_HIGH);
-
-        NotificationManagerCompat.from(context)
-                .notify((int) System.currentTimeMillis(), builder.build());
+        addMenuItem("Double Cheese Bacon Burger", 12.99, "Dairy, Gluten", null);
+        addMenuItem("Pepperoni Pizza", 12.99, "Dairy, Gluten", null);
+        addMenuItem("Spaghetti Bolognese", 9.50, "Gluten", null);
+        addMenuItem("Chicken Curry", 13.00, "Dairy", null);
+        addMenuItem("Cheesy Chips", 4.50, "Dairy", null);
     }
+
 }

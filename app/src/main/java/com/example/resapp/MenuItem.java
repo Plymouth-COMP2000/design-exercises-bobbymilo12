@@ -1,38 +1,23 @@
 package com.example.resapp;
 
 public class MenuItem {
+    public int id;
+    public String name;
+    public double price;
+    public String allergens;
+    public String imageUri;
 
-    private final String name;
-    private final String price;
-    private final int image;
-    private final String ingredients;
-    private final String allergens;
-
-    public MenuItem(String name, String price, int image, String ingredients, String allergens) {
+    public MenuItem(int id, String name, double price, String allergens, String imageUri) {
+        this.id = id;
         this.name = name;
         this.price = price;
-        this.image = image;
-        this.ingredients = ingredients;
         this.allergens = allergens;
+        this.imageUri = imageUri;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getPrice() {
-        return price;
-    }
-
-    public int getImage() {
-        return image;
-    }
-
-    public String getIngredients() {
-        return ingredients;
-    }
-
-    public String getAllergens() {
-        return allergens;
-    }
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+    public String getAllergens() { return allergens; }
+    public String getImageUri() { return imageUri; }
 }

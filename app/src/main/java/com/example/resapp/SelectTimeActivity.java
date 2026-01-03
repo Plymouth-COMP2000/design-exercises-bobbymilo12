@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class SelectTimeActivity extends AppCompatActivity {
 
     private String selectedDate;
+    private String loggedInUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,6 +18,7 @@ public class SelectTimeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_select_time);
 
         TextView tvDate = findViewById(R.id.tvSelectedDate);
+        loggedInUserEmail = getIntent().getStringExtra("user_email");
 
         selectedDate = getIntent().getStringExtra("selectedDate");
         tvDate.setText("Selected date: " + selectedDate);
@@ -34,10 +36,10 @@ public class SelectTimeActivity extends AppCompatActivity {
 
     private void openBooking(String time) {
         Intent intent = new Intent(SelectTimeActivity.this, BookingDetailsActivity.class);
-
         intent.putExtra("selectedTime", time);
         intent.putExtra("selectedDate", selectedDate);
-
+        // pass the logged in user email so bookings are saved with the correct owner
+        intent.putExtra("user_email", loggedInUserEmail);
         startActivity(intent);
     }
 }

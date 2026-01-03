@@ -17,10 +17,11 @@ import retrofit2.Response;
 
 public class CreateAccountActivity extends AppCompatActivity {
 
-    private EditText etFirstName, etLastName, etEmail, etPhone, etPassword;
+    private EditText etFirstName, etLastName, etEmail, etPassword;
     private Button btnCreateAccount;
 
     private ApiService apiService;
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,56 +29,87 @@ public class CreateAccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_account);
 
         etFirstName = findViewById(R.id.etFirstName);
-        etLastName = findViewById(R.id.etLastName);
-        etEmail = findViewById(R.id.etEmail);
-        etPhone = findViewById(R.id.etPhone);
-        etPassword = findViewById(R.id.etPassword);
+        etLastName  = findViewById(R.id.etLastName);
+        etEmail     = findViewById(R.id.etEmail);
+        etPassword  = findViewById(R.id.etPassword);
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
 
         apiService = ApiClient.getClient().create(ApiService.class);
+        dbHelper = new DatabaseHelper(this);
 
         btnCreateAccount.setOnClickListener(v -> createAccount());
     }
 
     private void createAccount() {
-        String firstName = etFirstName.getText().toString().trim();
-        String lastName = etLastName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
-                phone.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+        String firstName = etFirstName.getText().toString().trim();
+        String lastName  = etLastName.getText().toString().trim();
+        String email     = etEmail.getText().toString().trim();
+        String password  = etPassword.getText().toString().trim();
+
+        if (firstName.isEmpty() || lastName.isEmpty()
+                || email.isEmpty()
+                || password.isEmpty()) {
+            Toast.makeText(this,
+                    "Please fill in all fields",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
         String username = firstName.toLowerCase() + "_" + lastName.toLowerCase();
+        User user = new User(
+                username,
+                password,
+                firstName,
+                lastName,
+                email,
+                "student",      // contact
+                "student"       // ⭐ usertype
+        );
 
-        User user = new User(username, password, firstName, lastName, email, phone, "student");
 
-        Call<JsonObject> call = apiService.createUser("student_123", user);
-        call.enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(CreateAccountActivity.this,
-                            "Account created successfully",
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(CreateAccountActivity.this,
-                            "API Error: " + response.code(),
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
+        // 1️⃣ API call
+        apiService.createUser("student_123", user)
+                .enqueue(new Callback<JsonObject>() {
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                Toast.makeText(CreateAccountActivity.this,
-                        "Failed: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onResponse(
+                            Call<JsonObject> call,
+                            Response<JsonObject> response
+                    ) {
+                        if (response.isSuccessful()) {
+
+                            // 2️⃣ SAVE USER LOCALLY
+                            dbHelper.addUser(
+                                    email,
+                                    password,
+                                    firstName + " " + lastName
+                            );
+
+                            Toast.makeText(
+                                    CreateAccountActivity.this,
+                                    "Account created successfully",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            finish();
+                        } else {
+                            Toast.makeText(
+                                    CreateAccountActivity.this,
+                                    "API error: " + response.code(),
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        Toast.makeText(
+                                CreateAccountActivity.this,
+                                "Network error: " + t.getMessage(),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                });
     }
 }

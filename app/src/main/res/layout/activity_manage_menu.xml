@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btnAddMenu"
+        android:text="Add Menu Item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvEmptyMenu"
+        android:text="No menu items yet"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <ImageView
+        android:id="@+id/ivMenuImage"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:scaleType="center"
+        android:src="@drawable/reslogo"/>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvManageMenu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

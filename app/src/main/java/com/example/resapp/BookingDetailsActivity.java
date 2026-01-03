@@ -1,18 +1,12 @@
 package com.example.resapp;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-//test 5
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BookingDetailsActivity extends AppCompatActivity {
@@ -52,7 +46,27 @@ public class BookingDetailsActivity extends AppCompatActivity {
 
             String requests = etRequests.getText().toString();
 
-            long result = dbHelper.addReservation(name, selectedDate, selectedTime, guests, requests);
+            // Primary: intent extra
+            String email = getIntent().getStringExtra("user_email");
+            // Fallback: saved "remember me" preferences
+            if (email == null) {
+                SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                email = prefs.getString("email", null);
+            }
+
+            if (email == null || email.isEmpty()) {
+                Toast.makeText(this, "No logged-in email found. Please log in.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            long result = dbHelper.addReservation(
+                    email,
+                    name,
+                    selectedDate,
+                    selectedTime,
+                    guests,
+                    requests
+            );
             if (result != -1) {
                 Toast.makeText(this, "Reservation saved!", Toast.LENGTH_SHORT).show();
                 finish();
