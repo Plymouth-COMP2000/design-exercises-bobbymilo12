@@ -1,18 +1,27 @@
 package com.example.resapp;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "resapp.db";
     private static final int DB_VERSION = 3;
 
-    //reservations
+    // reservations
     public static final String TABLE_RESERVATIONS = "reservations";
     public static final String COL_ID = "id";
     public static final String COL_EMAIL = "email";
@@ -37,8 +46,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String MENU_ALLERGENS = "allergens";
     public static final String MENU_IMAGE = "image_uri";
 
+    // notifications
+    private static final String NOTI_CHANNEL_ID = "reservations_channel";
+    private final Context context;
+
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
+        this.context = context.getApplicationContext();
+        createNotificationChannel();
     }
 
     @Override
@@ -84,6 +99,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldV, newV);
     }
 
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    NOTI_CHANNEL_ID,
+                    "Reservation Updates",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            if (manager != null) manager.createNotificationChannel(channel);
+        }
+    }
+
+    private void sendReservationNotification(String title, String text) {
+        // Android 13+ permission check
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+        }
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(context, NOTI_CHANNEL_ID)
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentTitle(title)
+                        .setContentText(text)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setAutoCancel(true);
+
+        NotificationManagerCompat.from(context)
+                .notify((int) System.currentTimeMillis(), builder.build());
+    }
+
+
     public Cursor getUserReservations(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(
@@ -96,6 +146,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
+    public Cursor getReservationById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(
+                TABLE_RESERVATIONS,
+                null,
+                COL_ID + "=?",
+                new String[]{String.valueOf(id)},
+                null,
+                null,
+                null
+        );
+    }
+
     public long addReservation(String email, String name, String date, String time, int guests, String requests) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -105,7 +168,105 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_TIME, time);
         cv.put(COL_GUESTS, guests);
         cv.put(COL_REQUESTS, requests);
-        return db.insert(TABLE_RESERVATIONS, null, cv);
+
+        long id = db.insert(TABLE_RESERVATIONS, null, cv);
+
+        if (id != -1 && NotificationPrefs.isCreateEnabled(context)) {
+            sendReservationNotification(
+                    "Reservation Created",
+                    "Your booking for " + date + " at " + time + " was created."
+            );
+        }
+        return id;
+    }
+
+    public int updateReservation(int id,
+                                 String name,
+                                 String date,
+                                 String time,
+                                 int guests,
+                                 String requests) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(COL_NAME, name);
+        cv.put(COL_DATE, date);
+        cv.put(COL_TIME, time);
+        cv.put(COL_GUESTS, guests);
+        cv.put(COL_REQUESTS, requests);
+
+        int rows = db.update(
+                TABLE_RESERVATIONS,
+                cv,
+                COL_ID + "=?",
+                new String[]{String.valueOf(id)}
+        );
+
+        // Optional notification (only if guest enabled edit notifications)
+        if (rows > 0 && NotificationPrefs.isEditEnabled(context)) {
+            sendReservationNotification(
+                    "Reservation Updated",
+                    "Your booking was updated to " + date + " at " + time + "."
+            );
+        }
+
+        return rows;
+    }
+    public int updateReservationForUser(int id, String userEmail, String name, String date, String time, int guests, String requests) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_NAME, name);
+        cv.put(COL_DATE, date);
+        cv.put(COL_TIME, time);
+        cv.put(COL_GUESTS, guests);
+        cv.put(COL_REQUESTS, requests);
+
+        int rows = getWritableDatabase().update(
+                TABLE_RESERVATIONS,
+                cv,
+                COL_ID + "=? AND " + COL_EMAIL + "=?",
+                new String[]{String.valueOf(id), userEmail}
+        );
+
+        if (rows > 0 && NotificationPrefs.isEditEnabled(context)) {
+            sendReservationNotification(
+                    "Reservation Updated",
+                    "Your booking was updated to " + date + " at " + time + "."
+            );
+        }
+        return rows;
+    }
+
+    public int deleteReservationForUser(int id, String userEmail) {
+        int rows = getWritableDatabase().delete(
+                TABLE_RESERVATIONS,
+                COL_ID + "=? AND " + COL_EMAIL + "=?",
+                new String[]{String.valueOf(id), userEmail}
+        );
+
+        if (rows > 0 && NotificationPrefs.isDeleteEnabled(context)) {
+            sendReservationNotification(
+                    "Reservation Deleted",
+                    "Your booking was deleted."
+            );
+        }
+        return rows;
+    }
+
+    public int deleteReservationStaff(int id, String guestEmail) {
+        int rows = getWritableDatabase().delete(
+                TABLE_RESERVATIONS,
+                COL_ID + "=?",
+                new String[]{String.valueOf(id)}
+        );
+
+        if (rows > 0) {
+            sendReservationNotification(
+                    "Reservation Cancelled by Staff",
+                    "A booking for " + guestEmail + " was cancelled by staff."
+            );
+        }
+        return rows;
     }
 
     public int deleteReservation(int id) {
@@ -118,6 +279,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 null, null, null, null, null, COL_DATE + " ASC");
     }
 
+
     public long addUser(String email, String password, String fullName) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -126,6 +288,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(USER_COL_FULLNAME, fullName);
         return db.insertWithOnConflict(TABLE_USERS, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
+
 
     public long addMenuItem(String name, double price, String allergens, String imageUri) {
         SQLiteDatabase db = getWritableDatabase();
@@ -184,5 +347,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         addMenuItem("Chicken Curry", 13.00, "Dairy", null);
         addMenuItem("Cheesy Chips", 4.50, "Dairy", null);
     }
-
 }

@@ -3,6 +3,7 @@ package com.example.resapp;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,7 @@ public class MenuActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private MenuAdapter adapter;
     private List<MenuItem> menuItems;
+
     private Button btnBookManage, btnStaffLogin;
     private DatabaseHelper dbHelper;
 
@@ -32,11 +34,16 @@ public class MenuActivity extends AppCompatActivity {
         btnStaffLogin = findViewById(R.id.btnStaffLogin);
 
         dbHelper = new DatabaseHelper(this);
+        dbHelper.seedMenuIfEmpty();
+
         menuItems = new ArrayList<>();
 
-        loadMenuFromDB();
-
-        adapter = new MenuAdapter(menuItems, this, false, null);
+        adapter = new MenuAdapter(
+                menuItems,
+                this,
+                false,
+                null
+        );
         recyclerView.setAdapter(adapter);
 
         btnBookManage.setOnClickListener(v -> {
@@ -46,21 +53,37 @@ public class MenuActivity extends AppCompatActivity {
         btnStaffLogin.setOnClickListener(v -> {
             startActivity(new Intent(MenuActivity.this, StaffLoginActivity.class));
         });
+
+        refreshMenuFromDB();
     }
 
-    private void loadMenuFromDB() {
-        Cursor cursor = dbHelper.getAllMenuItems();
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_ID));
-                String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_NAME));
-                double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_PRICE));
-                String allergens = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_ALLERGENS));
-                String imageUri = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_IMAGE));
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshMenuFromDB();
+    }
 
-                menuItems.add(new MenuItem(id, name, price, allergens, imageUri));
-            } while (cursor.moveToNext());
-            cursor.close();
+    private void refreshMenuFromDB() {
+        menuItems.clear();
+
+        Cursor cursor = null;
+        try {
+            cursor = dbHelper.getAllMenuItems();
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_NAME));
+                    double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_PRICE));
+                    String allergens = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_ALLERGENS));
+                    String imageUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.MENU_IMAGE));
+
+                    menuItems.add(new MenuItem(id, name, price, allergens, imageUrl));
+                }
+            }
+        } finally {
+            if (cursor != null) cursor.close();
         }
+
+        adapter.notifyDataSetChanged();
     }
 }

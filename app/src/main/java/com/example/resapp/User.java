@@ -8,7 +8,7 @@ public class User {
     private String lastname;
     private String email;
     private String contact;
-    private String usertype; // ⭐ ADD THIS
+    private String usertype;
 
     public User(String username,
                 String password,
@@ -24,6 +24,6 @@ public class User {
         this.lastname = lastname;
         this.email = email;
         this.contact = contact;
-        this.usertype = usertype; // ⭐ REQUIRED
+        this.usertype = usertype;
     }
 }

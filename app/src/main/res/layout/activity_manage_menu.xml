@@ -10,20 +10,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="← Back"
+        android:layout_marginBottom="12dp"/>
+
+
     <TextView
         android:id="@+id/tvEmptyMenu"
         android:text="No menu items yet"
         android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
-
-    <ImageView
-        android:id="@+id/ivMenuImage"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:scaleType="center"
-        android:src="@drawable/reslogo"/>
-
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvManageMenu"

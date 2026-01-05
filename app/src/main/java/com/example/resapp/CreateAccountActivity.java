@@ -38,6 +38,9 @@ public class CreateAccountActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
 
         btnCreateAccount.setOnClickListener(v -> createAccount());
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
     }
 
     private void createAccount() {
@@ -63,12 +66,12 @@ public class CreateAccountActivity extends AppCompatActivity {
                 firstName,
                 lastName,
                 email,
-                "student",      // contact
-                "student"       // ⭐ usertype
+                "student",
+                "student"
         );
 
 
-        // 1️⃣ API call
+
         apiService.createUser("student_123", user)
                 .enqueue(new Callback<JsonObject>() {
 
@@ -79,7 +82,6 @@ public class CreateAccountActivity extends AppCompatActivity {
                     ) {
                         if (response.isSuccessful()) {
 
-                            // 2️⃣ SAVE USER LOCALLY
                             dbHelper.addUser(
                                     email,
                                     password,

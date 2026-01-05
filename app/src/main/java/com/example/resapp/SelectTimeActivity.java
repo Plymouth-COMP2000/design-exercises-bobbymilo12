@@ -17,6 +17,10 @@ public class SelectTimeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_time);
 
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
+
         TextView tvDate = findViewById(R.id.tvSelectedDate);
         loggedInUserEmail = getIntent().getStringExtra("user_email");
 
@@ -38,7 +42,6 @@ public class SelectTimeActivity extends AppCompatActivity {
         Intent intent = new Intent(SelectTimeActivity.this, BookingDetailsActivity.class);
         intent.putExtra("selectedTime", time);
         intent.putExtra("selectedDate", selectedDate);
-        // pass the logged in user email so bookings are saved with the correct owner
         intent.putExtra("user_email", loggedInUserEmail);
         startActivity(intent);
     }

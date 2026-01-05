@@ -22,6 +22,9 @@ public class StaffLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_staff_login);
 
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
         etStaffEmail = findViewById(R.id.etStaffEmail);
         etStaffPassword = findViewById(R.id.etStaffPassword);
         btnStaffLogin = findViewById(R.id.btnStaffLogin);

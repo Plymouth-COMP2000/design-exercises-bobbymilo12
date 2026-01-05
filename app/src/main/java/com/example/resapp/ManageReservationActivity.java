@@ -1,17 +1,18 @@
 package com.example.resapp;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
-
+import android.widget.Toast;
+import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.widget.Toast;
-import android.util.Log;
 
 public class ManageReservationActivity extends AppCompatActivity {
 
@@ -21,21 +22,29 @@ public class ManageReservationActivity extends AppCompatActivity {
     private List<Reservation> reservations;
     private TextView tvPlaceholder;
 
+    private String userEmail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_reservation);
 
         dbHelper = new DatabaseHelper(this);
+
         recyclerView = findViewById(R.id.rvReservations);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         tvPlaceholder = findViewById(R.id.tvPlaceholder);
 
-        String userEmail = getIntent().getStringExtra("user_email");
-        Toast.makeText(this, "Email: " + userEmail, Toast.LENGTH_LONG).show();
+
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
+
+        userEmail = getIntent().getStringExtra("user_email");
         Log.d("ManageReservation", "Querying reservations for email: " + userEmail);
 
-        if (userEmail == null || userEmail.isEmpty()) {
+        if (userEmail == null || userEmail.trim().isEmpty()) {
             tvPlaceholder.setText("Please log in to view your reservations");
             tvPlaceholder.setVisibility(TextView.VISIBLE);
             recyclerView.setVisibility(RecyclerView.GONE);
@@ -43,12 +52,17 @@ public class ManageReservationActivity extends AppCompatActivity {
         }
 
         reservations = new ArrayList<>();
-
         loadReservationsFromDB(userEmail);
 
-        adapter = new ReservationAdapter(reservations);
+        adapter = new ReservationAdapter(
+                this,
+                reservations,
+                false,
+                dbHelper,
+                userEmail
+        );
+
         recyclerView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
 
         if (reservations.isEmpty()) {
             recyclerView.setVisibility(RecyclerView.GONE);
@@ -60,16 +74,13 @@ public class ManageReservationActivity extends AppCompatActivity {
     }
 
     private void loadReservationsFromDB(String userEmail) {
-        // use try-with-resources to ensure cursors are closed
         Cursor cursor = null;
+
         try {
             cursor = dbHelper.getUserReservations(userEmail);
 
-            Toast.makeText(
-                    this,
-                    "Reservations found: " + (cursor != null ? cursor.getCount() : 0),
-                    Toast.LENGTH_SHORT
-            ).show();
+            int count = (cursor != null) ? cursor.getCount() : 0;
+            Toast.makeText(this, "Reservations found: " + count, Toast.LENGTH_SHORT).show();
 
             if (cursor == null) return;
 
@@ -84,6 +95,7 @@ public class ManageReservationActivity extends AppCompatActivity {
                 do {
                     reservations.add(new Reservation(
                             cursor.getInt(idIndex),
+                            userEmail,
                             cursor.getString(nameIndex),
                             cursor.getString(dateIndex),
                             cursor.getString(timeIndex),
@@ -92,12 +104,11 @@ public class ManageReservationActivity extends AppCompatActivity {
                     ));
                 } while (cursor.moveToNext());
             }
-        } catch (IllegalArgumentException e) {
-            Log.e("ManageReservation", "Expected column missing in cursor: " + e.getMessage());
+
+        } catch (Exception e) {
+            Log.e("ManageReservation", "Error loading reservations: " + e.getMessage());
         } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+            if (cursor != null && !cursor.isClosed()) cursor.close();
         }
     }
 }

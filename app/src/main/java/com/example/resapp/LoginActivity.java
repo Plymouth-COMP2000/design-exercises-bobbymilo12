@@ -28,6 +28,9 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnCreate = findViewById(R.id.btnCreateAccount);
         cbRememberMe = findViewById(R.id.cbRememberMe);
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
 
         prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
 

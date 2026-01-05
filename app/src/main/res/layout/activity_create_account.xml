@@ -42,5 +42,12 @@
             android:layout_height="wrap_content"
             android:text="Create Account"
             android:layout_marginTop="20dp"/>
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="← Back"
+            android:layout_marginBottom="12dp"/>
+
     </LinearLayout>
 </ScrollView>

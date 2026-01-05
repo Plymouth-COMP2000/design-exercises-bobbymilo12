@@ -19,6 +19,10 @@ public class BookingDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_details);
 
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
+
         dbHelper = new DatabaseHelper(this);
 
         selectedDate = getIntent().getStringExtra("selectedDate");
@@ -46,9 +50,7 @@ public class BookingDetailsActivity extends AppCompatActivity {
 
             String requests = etRequests.getText().toString();
 
-            // Primary: intent extra
             String email = getIntent().getStringExtra("user_email");
-            // Fallback: saved "remember me" preferences
             if (email == null) {
                 SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
                 email = prefs.getString("email", null);

@@ -15,6 +15,10 @@ public class StaffDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_staff_dashboard);
 
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
+
         Button btnViewReservations = findViewById(R.id.btnViewReservations);
 
         btnManageMenu = findViewById(R.id.btnManageMenu);

@@ -95,17 +95,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etGuests" />
 
+
         <Button
-            android:id="@+id/btnSignOut"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:background="#DDDDDD"
-            android:text="Sign Out"
-            android:textSize="20sp"
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Back"
             app:layout_constraintTop_toBottomOf="@id/btnConfirm"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent" />
+            tools:layout_editor_absoluteX="136dp" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

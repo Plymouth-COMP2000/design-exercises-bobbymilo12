@@ -1,5 +1,7 @@
 package com.example.resapp;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,19 +14,25 @@ import java.util.List;
 
 public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.ViewHolder> {
 
-    private List<Reservation> reservations;
-    private boolean isStaff;
-    private DatabaseHelper dbHelper;
+    private final Context context;
+    private final List<Reservation> reservations;
+    private final boolean isStaff;
+    private final DatabaseHelper dbHelper;
 
-    public ReservationAdapter(List<Reservation> reservations) {
-        this.reservations = reservations;
-        this.isStaff = false;
-    }
+    // For guest mode, this is the logged-in guest email.
+    // For staff mode, you can pass null (not needed).
+    private final String loggedInUserEmail;
 
-    public ReservationAdapter(List<Reservation> reservations, boolean isStaff, DatabaseHelper dbHelper) {
+    public ReservationAdapter(Context context,
+                              List<Reservation> reservations,
+                              boolean isStaff,
+                              DatabaseHelper dbHelper,
+                              String loggedInUserEmail) {
+        this.context = context;
         this.reservations = reservations;
         this.isStaff = isStaff;
         this.dbHelper = dbHelper;
+        this.loggedInUserEmail = loggedInUserEmail;
     }
 
     @Override
@@ -41,18 +49,55 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         holder.tvDetails.setText(
                 r.getName() + "\n" +
                         r.getDate() + " " + r.getTime() +
-                        "\nGuests: " + r.getGuests()
+                        "\nGuests: " + r.getGuests() +
+                        (r.getRequests() != null && !r.getRequests().isEmpty()
+                                ? "\nRequests: " + r.getRequests()
+                                : "")
         );
 
         if (isStaff) {
-            holder.btnCancel.setVisibility(View.VISIBLE);
-            holder.btnCancel.setOnClickListener(v -> {
-                dbHelper.deleteReservation(r.getId());
-                reservations.remove(position);
-                notifyItemRemoved(position);
+
+            holder.btnEdit.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+
+            holder.btnDelete.setOnClickListener(v -> {
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos == RecyclerView.NO_POSITION) return;
+
+                int rows = dbHelper.deleteReservationStaff(r.getId(), r.getEmail());
+
+                if (rows > 0) {
+                    reservations.remove(adapterPos);
+                    notifyItemRemoved(adapterPos);
+                }
             });
+
         } else {
-            holder.btnCancel.setVisibility(View.GONE);
+            // GUEST MODE
+            holder.btnEdit.setVisibility(View.VISIBLE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+
+            holder.btnEdit.setOnClickListener(v -> {
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos == RecyclerView.NO_POSITION) return;
+
+                Intent intent = new Intent(context, EditReservationActivity.class);
+                intent.putExtra("reservation_id", r.getId());
+                intent.putExtra("user_email", loggedInUserEmail); // REQUIRED
+                context.startActivity(intent);
+            });
+
+            holder.btnDelete.setOnClickListener(v -> {
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos == RecyclerView.NO_POSITION) return;
+
+                int rows = dbHelper.deleteReservationForUser(r.getId(), loggedInUserEmail);
+
+                if (rows > 0) {
+                    reservations.remove(adapterPos);
+                    notifyItemRemoved(adapterPos);
+                }
+            });
         }
     }
 
@@ -63,12 +108,13 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvDetails;
-        Button btnCancel;
+        Button btnEdit, btnDelete;
 
         ViewHolder(View itemView) {
             super(itemView);
             tvDetails = itemView.findViewById(R.id.tvReservationDetails);
-            btnCancel = itemView.findViewById(R.id.btnCancelReservation);
+            btnEdit = itemView.findViewById(R.id.btnEditReservation);
+            btnDelete = itemView.findViewById(R.id.btnCancelReservation);
         }
     }
 }

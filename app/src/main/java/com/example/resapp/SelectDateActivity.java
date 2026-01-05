@@ -25,6 +25,9 @@ public class SelectDateActivity extends AppCompatActivity {
             startActivity(intent);
 
         });
+        Button btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
 
         calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
             String selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;

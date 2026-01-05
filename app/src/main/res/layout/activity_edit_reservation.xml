@@ -5,43 +5,41 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/etName"
+        android:id="@+id/etResName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Name"/>
+        android:hint="Name" />
 
     <EditText
-        android:id="@+id/etPrice"
+        android:id="@+id/etResDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Price"
-        android:inputType="numberDecimal"/>
+        android:hint="Date" />
 
     <EditText
-        android:id="@+id/etAllergens"
+        android:id="@+id/etResTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Allergens"/>
-
+        android:hint="Time" />
 
     <EditText
-        android:id="@+id/etImageUrl"
+        android:id="@+id/etResGuests"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Image URL (https://...)"/>
+        android:hint="Guests"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/etResRequests"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Special requests" />
 
     <Button
-        android:id="@+id/btnSave"
+        android:id="@+id/btnSaveReservation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save"/>
-
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="← Back"
-        android:layout_marginBottom="12dp"/>
-
+        android:text="Save Changes"
+        android:layout_marginTop="12dp" />
 
 </LinearLayout>
