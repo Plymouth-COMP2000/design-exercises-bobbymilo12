@@ -1,102 +1,103 @@
-Overview
+# Restaurant Reservation App (Android)
+## Overview
 
-This project is an Android application developed as part of the COMP2000 module coursework.
+- This project is an Android application developed as part of the COMP2000 module coursework.
 
-The application supports two user roles:
+- The application supports two user roles:
 
-Guest users
+### Guest users
 
-Browse menu items
+- Browse menu items
 
-Create, view, edit, and delete their own reservations
+- Create, view, edit, and delete their own reservations
 
-Receive notifications when reservations are created, updated, or deleted (configurable)
+- Receive notifications when reservations are created, updated, or deleted (configurable)
 
-Staff users
+### Staff users
 
-View all reservations
+- View all reservations
 
-Cancel guest reservations
+- Cancel guest reservations
 
-Add, edit, and delete menu items
+- Add, edit, and delete menu items
 
-Receive notifications when reservations are modified by guests
+- Receive notifications when reservations are modified by guests
 
 Role-based behaviour is handled internally within the application for assessment purposes.
 No external authentication service or backend API is required to run or evaluate the app.
 
-Technologies Used
+## Technologies Used
 
-Android Studio
+- Android Studio
 
-Java (primary development language)
+- Java
 
-SQLite (via SQLiteOpenHelper)
+- SQLite (via SQLiteOpenHelper)
 
-Material Design Components
+- Material Design Components
 
-Android Notifications API
+- Android Notifications API
 
-RecyclerView for dynamic lists
+- RecyclerView for dynamic lists
 
-Data Persistence
+- Data Persistence
 
-All application data is stored locally using SQLite.
+- All application data is stored locally using SQLite.
 
-The database is used to persist:
+### The database is used to persist:
 
-Reservations
+- Reservations
 
-Menu items
+- Menu items
 
-User accounts (guest and staff)
+- User accounts (guest and staff)
 
-CRUD (Create, Read, Update, Delete) operations are implemented using helper and adapter classes to separate concerns between UI and data handling.
+- CRUD (Create, Read, Update, Delete) operations are implemented using helper and adapter classes to separate concerns between UI and data handling.
 
-Notifications
+### Notifications
 
-The app uses the Android Notifications API to notify users when reservation-related actions occur:
+- The app uses the Android Notifications API to notify users when reservation-related actions occur:
 
-Reservation created
+- Reservation created
 
-Reservation updated
+- Reservation updated
 
-Reservation deleted (by guest or staff)
+- Reservation deleted (by guest or staff)
 
-Guests can control notification preferences from the Manage Reservations screen, while staff notifications are always enabled.
+- Guests can control notification preferences from the Manage Reservations screen, while staff notifications are always enabled.
 
-Third-Party / External Resources
+### Third-Party / External Resources
 
-Android Material Components (UI elements)
+- Android Material Components (UI elements)
 
-AndroidX Libraries
+- AndroidX Libraries
 
-RecyclerView
+- RecyclerView
 
-ConstraintLayout
+- ConstraintLayout
 
-Core & AppCompat libraries
+### Core & AppCompat libraries
 
-Glide (for loading menu item images via URLs)
+- Glide (for loading menu item images via URLs)
 
-No external backend services or cloud APIs are used.
+- No external backend services or cloud APIs are used.
 
-How to Run the App
+##How to Run the App
 
-Clone the repository
+- Clone the repository
 
-Open the project in Android Studio
+- Open the project in Android Studio
 
-Allow Gradle to sync
+- Allow Gradle to sync
 
-Run the app on an emulator or physical Android device (Android 8.0+ recommended)
+- Run the app on an emulator or physical Android device (Android 8.0+ recommended)
 
-Notes for Assessment
+## Notes for Assessment
 
-The app is fully self-contained
+- The app is fully self-contained
 
-No network connection is required
+- No network connection is required
 
-All data is stored locally
+- All data is stored locally
 
-Role behaviour is simulated for coursework requirements
+- Role behaviour is simulated for coursework requirements
