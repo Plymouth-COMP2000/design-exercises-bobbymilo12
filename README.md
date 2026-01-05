@@ -82,7 +82,7 @@ No external authentication service or backend API is required to run or evaluate
 
 - No external backend services or cloud APIs are used.
 
-##How to Run the App
+## How to Run the App
 
 - Clone the repository
 
