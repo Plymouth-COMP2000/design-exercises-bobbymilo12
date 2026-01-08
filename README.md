@@ -1,4 +1,5 @@
 # Restaurant Reservation App (Android)
+## Assessment 2 Video link: https://youtu.be/IBkVV11DQII
 ## Overview
 
 - This project is an Android application developed as part of the COMP2000 module coursework.
